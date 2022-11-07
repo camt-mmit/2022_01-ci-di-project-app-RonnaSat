@@ -31,7 +31,7 @@ function Books() {
             }
         };
         getData();
-    }, [token]);
+    }, [token, data]);
 
     console.log(data);
     console.log(typeof data);

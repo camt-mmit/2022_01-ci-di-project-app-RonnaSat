@@ -32,7 +32,7 @@ function User() {
             }
         };
         getData();
-    }, [token]);
+    }, [token, data]);
 
     console.log(data);
     console.log(typeof data);
