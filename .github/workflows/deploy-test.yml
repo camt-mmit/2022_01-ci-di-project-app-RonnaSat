@@ -3,16 +3,16 @@ run-name: ${{ github.actor }} is deploying
 on:
   push:
     branchs: main
-jobs:
+jobs: 
   deploy-gh-pages:
     runs-on: ubuntu-latest
-    steps:
+    steps: 
       - uses: actions/checkout@v3
         with:
-          token: ${{ secrets.PUSH_MAIN }}
+          token: ${{ secrets.PUSH_MAIN }} 
       - uses: actions/setup-node@v3
         with:
-          node-version: "16"
+          node-version: "16" 
       - run: |
           git config --global user.email "${{ github.event.pusher.email }}"
           git config --global user.name "${{ github.actor }}" 
@@ -23,12 +23,40 @@ jobs:
           git init -b gh-pages ./gh-pages
           cd ./gh-pages
           git remote add -t gh-pages origin \
-          https://git:${{ github.token }}@github.com/${{ github.repository }}.git
-          git fetch -u origin gh-pages:gh-pages || exit 0
+          https://git:${{ github.token }}@github.com/${{ github.repository }}.git 
+          git pull origin gh-pages
+          rm -rf ./*
+          cp -rf ../build/* ./
           git add .
           git commit -m "Manually commit" || exit 0
           git push origin gh-pages
           cd ..
+# jobs:
+#   deploy-gh-pages:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v3
+#         with:
+#           token: ${{ secrets.PUSH_MAIN }}
+#       - uses: actions/setup-node@v3
+#         with:
+#           node-version: "16"
+#       - run: |
+#           git config --global user.email "${{ github.event.pusher.email }}"
+#           git config --global user.name "${{ github.actor }}" 
+#       - run: npm install
+#       - run: PUBLIC_URL=/${{ github.event.repository.name }} npm run build
+#       - run: |
+#           mkdir ./gh-pages
+#           git init -b gh-pages ./gh-pages
+#           cd ./gh-pages
+#           git remote add -t gh-pages origin \
+#           https://git:${{ github.token }}@github.com/${{ github.repository }}.git
+#           git fetch -u origin gh-pages:gh-pages || exit 0
+#           git add .
+#           git commit -m "Manually commit" || exit 0
+#           git push origin gh-pages
+#           cd ..
   push-docker-hub:
     runs-on: ubuntu-latest
     steps:
