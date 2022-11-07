@@ -29,6 +29,7 @@ jobs:
           git commit -m "Manually commit" || exit 0
           git push origin gh-pages
           cd ..
+          
   push-docker-hub:
     runs-on: ubuntu-latest
     steps:
