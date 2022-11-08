@@ -9,7 +9,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          token: ${{ secrets.PUSH_MAIN }}
+          token: ${{ github.token }}
       - uses: actions/setup-node@v3
         with:
           node-version: "16"
@@ -19,16 +19,27 @@ jobs:
       - run: npm install
       - run: PUBLIC_URL=/${{ github.event.repository.name }} npm run build
       - run: |
-          mkdir ./gh-pages
-          git init -b gh-pages ./gh-pages
-          cd ./gh-pages
+          cd ./build
+          git init -b gh-pages
           git remote add -t gh-pages origin \
           https://git:${{ github.token }}@github.com/${{ github.repository }}.git
           git fetch -u origin gh-pages:gh-pages || exit 0
           git add .
-          git commit -m "Manually commit" || exit 0
-          git push origin gh-pages
+          git commit -m "${{ github.actor }} deploy" || exit 0
+          git push origin gh-pages -f
           cd ..
+
+      # - run: |
+      #     mkdir ./gh-pages
+      #     git init -b gh-pages ./gh-pages
+      #     cd ./gh-pages
+      #     git remote add -t gh-pages origin \
+      #     https://git:${{ github.token }}@github.com/${{ github.repository }}.git
+      #     git fetch -u origin gh-pages:gh-pages || exit 0
+      #     git add .
+      #     git commit -m "Manually commit" || exit 0
+      #     git push origin gh-pages
+      #     cd ..
           
   push-docker-hub:
     runs-on: ubuntu-latest
