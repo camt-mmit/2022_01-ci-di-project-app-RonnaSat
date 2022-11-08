@@ -27,7 +27,6 @@ jobs:
           git commit -m "${{ github.actor }} deploy" || exit 0
           git push origin gh-pages -f
           cd ..
-
       # - run: |
       #     mkdir ./gh-pages
       #     git init -b gh-pages ./gh-pages
