@@ -21,8 +21,7 @@ jobs:
       - run: |
           cd ./build
           git init -b gh-pages
-          git remote add -t gh-pages origin \
-          https://git:${{ github.token }}@github.com/${{ github.repository }}.git
+          git remote add -t gh-pages origin https://git:${{ github.token }}@github.com/${{ github.repository }}.git
           git fetch -u origin gh-pages:gh-pages || exit 0
           git add .
           git commit -m "${{ github.actor }} deploy" || exit 0
