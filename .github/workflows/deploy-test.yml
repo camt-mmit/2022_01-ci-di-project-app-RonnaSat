@@ -4,31 +4,85 @@ on:
   push:
     branchs: main
 jobs:
-  deploy-gh-pages:
-    runs-on: ubuntu-latest
+  ci :
+    runs-on : ubuntu-latest
     steps:
       - uses: actions/checkout@v3
         with:
-          token: ${{ secrets.PUSH_MAIN }}
-      - uses: actions/setup-node@v3
-        with:
-          node-version: "16"
-      - run: |
+          token : ${{ secrets.PUSH_MAIN }}
+      - uses : actions/setup-node@v3
+        with : 
+          node-version : 16
+          cache : 'yarn'
+      - run : |
           git config --global user.email "${{ github.event.pusher.email }}"
-          git config --global user.name "${{ github.actor }}" 
-      - run: npm install
-      - run: PUBLIC_URL=/${{ github.event.repository.name }} npm run build
-      - run: |
-          mkdir ./gh-pages
-          git init -b gh-pages ./gh-pages
-          cd ./gh-pages
-          git remote add -t gh-pages origin \
-          https://git:${{ github.token }}@github.com/${{ github.repository }}.git
-          git fetch -u origin gh-pages:gh-pages || exit 0
-          git add .
-          git commit -m "Manually commit" || exit 0
-          git push origin gh-pages
-          cd ..
+          git config --global user.name "${{ github.actor }}"
+      - run : npm install -g yarn
+      - name : Install dependency
+        run : yarn --frozen-lockfile
+      - name : Run unit test
+        run : yarn test
+      - name: Merge
+        run : |
+          git fetch --unshallow
+          git checkout main
+          git pull
+          git merge ci
+          git push
+  deploy-gh-pages:
+      runs-on : ubuntu-latest
+      needs : 
+        - "ci"
+      steps:
+        - uses : actions/checkout@v3
+          with:
+            token : ${{ github.token }}
+        - uses : actions/setup-node@v3
+          with : 
+            node-version : 16
+            cache : 'yarn'
+        - run : |
+            git config --global user.email "${{ github.event.pusher.email }}"
+            git config --global user.name "${{ github.actor }}"
+        - run : npm install -g yarn
+        - run : yarn
+        - run : PUBLIC_URL=/${{ github.event.repository.name }} yarn build
+        - name : deploy
+          run: |
+            cd ./build
+            git init -b gh-pages
+            git remote add -t gh-pages origin \
+            https://git:${{ github.token }}@github.com/${{ github.repository }}.git
+            git fetch -u origin gh-pages:gh-pages
+            git add .
+            git commit -m "${{ github.actor }} deploy" || echo "nothing change on commit && exit 0"
+            git push origin gh-pages -f
+            cd ..   
+  # deploy-gh-pages:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #       with:
+  #         token: ${{ secrets.PUSH_MAIN }}
+  #     - uses: actions/setup-node@v3
+  #       with:
+  #         node-version: "16"
+  #     - run: |
+  #         git config --global user.email "${{ github.event.pusher.email }}"
+  #         git config --global user.name "${{ github.actor }}" 
+  #     - run: npm install
+  #     - run: PUBLIC_URL=/${{ github.event.repository.name }} npm run build
+  #     - run: |
+  #         mkdir ./gh-pages
+  #         git init -b gh-pages ./gh-pages
+  #         cd ./gh-pages
+  #         git remote add -t gh-pages origin \
+  #         https://git:${{ github.token }}@github.com/${{ github.repository }}.git
+  #         git fetch -u origin gh-pages:gh-pages || exit 0
+  #         git add .
+  #         git commit -m "Manually commit" || exit 0
+  #         git push origin gh-pages
+  #         cd ..
           
   push-docker-hub:
     runs-on: ubuntu-latest
